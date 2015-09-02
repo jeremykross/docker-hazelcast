@@ -35,6 +35,37 @@ async.parallel({
         });
 
         req.send();
+    },
+    HAZELCAST_INTERFACE: function(fn){
+        if(_.has(process.env, "HAZELCAST_INTERFACE"))
+            return fn(null, process.env.HAZELCAST_INTERFACE);
+
+        var question = dns.Question({
+          name: [os.hostname(), process.env.CS_CLUSTER_ID, "containership"].join("."),
+          type: "A"
+        });
+
+        var req = dns.Request({
+            question: question,
+            server: { address: "127.0.0.1", port: 53, type: "udp" },
+            timeout: 2000
+        });
+
+        req.on("timeout", function(){
+            return fn();
+        });
+
+        req.on("message", function (err, answer) {
+            var addresses = [];
+            answer.answer.forEach(function(a){
+                addresses.push(a.address);
+            });
+
+            return fn(null, _.first(addresses));
+        });
+
+        req.send();
+
     }
 }, function(err, hazelcast){
     _.merge(hazelcast, process.env);
@@ -42,7 +73,8 @@ async.parallel({
     _.defaults(hazelcast, {
         HAZELCAST_GROUP_NAME: "dev",
         HAZELCAST_GROUP_PASSWORD: "dev-pass",
-        HAZELCAST_MEMBERS: ""
+        HAZELCAST_MEMBERS: "",
+        HAZELCAST_INTERFACE: ""
     });
 
     fs.readFile([__dirname, "hazelcast.template"].join("/"), function(err, config){
@@ -54,14 +86,23 @@ async.parallel({
         else
             config = config.replace(/CLUSTER_MEMBERS/g, "");
 
-        fs.writeFile([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "hazelcast.xml"].join("/"), config, function(err){
-            if(err)
-                process.exit(1);
+        if(!_.isEmpty(hazelcast.HAZELCAST_INTERFACE))
+            config = config.replace(/INTERFACE/g, ["<interface>", hazelcast.HAZELCAST_INTERFACE, "</interface>"].join(" "));
+        else
+            config = config.replace(/INTERFACE/g, "");
 
-            child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"), {}, {
-                stdio: "inherit"
-            }).on("error", function(err){
-                process.stderr.write(err);
+        fs.writeFile([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "hazelcast.xml"].join("/"), config, function(err){
+            if(err){
+                process.stderr.write(err.message);
+                process.exit(1);
+            }
+
+            var proc = child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"), {}, { stdio: "inherit" });
+            proc.stdout.pipe(process.stdout);
+            proc.stderr.pipe(process.stderr);
+            proc.on("error", function(err){
+                process.stderr.write(err.message);
+                process.exit(1);
             });
         });
     });

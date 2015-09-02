@@ -37,8 +37,8 @@
                 CLUSTER_MEMBERS
             </tcp-ip>
         </join>
-        <interfaces enabled="false">
-            <interface>10.10.1.*</interface>
+        <interfaces enabled="true">
+            INTERFACE
         </interfaces>
         <ssl enabled="false"/>
         <socket-interceptor enabled="false"/>
