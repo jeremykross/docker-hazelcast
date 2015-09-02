@@ -101,9 +101,11 @@ async.parallel({
                 ["-Dhazelcast.config", [hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "hazelcast.xml"].join("/")].join("=")
             ]
 
-            var proc = child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"), options, { stdio: "inherit" });
+            var proc = child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"), options);
+
             proc.stdout.pipe(process.stdout);
             proc.stderr.pipe(process.stderr);
+
             proc.on("error", function(err){
                 process.stderr.write(err.message);
                 process.exit(1);
