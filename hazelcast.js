@@ -91,17 +91,13 @@ async.parallel({
         else
             config = config.replace(/INTERFACE/g, "");
 
-        fs.writeFile([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "hazelcast.xml"].join("/"), config, function(err){
+        fs.writeFile([__dirname, "hazelcast.xml"].join("/"), config, function(err){
             if(err){
                 process.stderr.write(err.message);
                 process.exit(1);
             }
 
-            var options = [
-                ["-Dhazelcast.config", [hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "hazelcast.xml"].join("/")].join("=")
-            ]
-
-            var proc = child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"), options);
+            var proc = child_process.spawn([hazelcast.HZ_HOME, ["hazelcast", hazelcast.HZ_VERSION].join("-"), "bin", "server.sh"].join("/"));
 
             proc.stdout.pipe(process.stdout);
             proc.stderr.pipe(process.stderr);
