@@ -3,13 +3,13 @@
 ##About
 
 ###Description
-Docker image designed to run Hazelcast cluster on ContainerShip
+Docker image designed to run a Hazelcast cluster on ContainerShip
 
 ###Author
 ContainerShip Developers - developers@containership.io
 
 ##Usage
-This image is designed to run Hazelcast on a ContainerShip cluster. Running this image elsewhere is not recommended as the container may be unable to start.
+This image is designed to run a Hazelcast on a ContainerShip cluster. Running this image elsewhere is not recommended as the container may be unable to start.
 
 ###Configuration
 This image will run as-is, with no additional environment variables set. For clustering to work properly, start the application in host networking mode.
