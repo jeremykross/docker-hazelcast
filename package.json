@@ -1,5 +1,5 @@
 {
-  "name": "docker-hazelcast",
+  "name": "@containership/containership.marketplace.hazelcast",
   "private": true,
   "description": "Docker image designed to run a Hazelcast cluster on ContainerShip",
   "main": "hazelcast.js",
